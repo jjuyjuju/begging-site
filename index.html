@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍚 在线乞讨 - 讨到100元就收手！</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --accent: #e94560;
+            --gold: #f0c040;
+            --green: #4cff8f;
+            --text: #eee;
+            --muted: #999;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(233,68,96,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(240,192,64,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(100,100,255,0.05) 0%, transparent 50%);
+            overflow-x: hidden;
+            padding: 20px 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        /* === MODE TABS === */
+        .mode-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 5px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--muted);
+            background: transparent;
+            transition: all 0.3s;
+        }
+
+        .mode-tab.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(233,68,96,0.4);
+        }
+
+        .mode-tab:hover:not(.active) {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* === CARD === */
+        .card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 36px 28px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(233,68,96,0.06), transparent, rgba(240,192,64,0.04), transparent);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate { to { transform: rotate(360deg); } }
+
+        .card > * { position: relative; z-index: 1; }
+
+        /* === BEGGAR === */
+        .beggar {
+            font-size: 80px;
+            animation: bounce 2s ease-in-out infinite;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+            display: inline-block;
+        }
+        .beggar:active { transform: scale(0.85); }
+
+        @keyframes bounce {
+            0%,100% { transform: translateY(0); }
+            30%     { transform: translateY(-18px); }
+            50%     { transform: translateY(0); }
+            70%     { transform: translateY(-8px); }
+        }
+
+        .beggar-speech {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 10px 18px;
+            margin: 12px auto 0;
+            font-size: 14px;
+            color: #ccc;
+            max-width: 320px;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        /* === PROGRESS === */
+        .progress-section { margin: 28px 0 20px; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .progress-header .raised {
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 28px;
+        }
+
+        .progress-header .goal { color: var(--muted); font-size: 14px; }
+
+        .progress-bar-outer {
+            height: 14px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560, #f0c040);
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.22,0.61,0.36,1);
+            position: relative;
+        }
+
+        .progress-bar-inner::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0;
+            width: 20px; height: 100%;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            filter: blur(4px);
+        }
+
+        .progress-percent {
+            text-align: center;
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* === DONATE BUTTONS === */
+        .donate-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .donate-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 12px 8px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .donate-btn:hover {
+            background: rgba(255,255,255,0.14);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233,68,96,0.25);
+        }
+        .donate-btn:active { transform: scale(0.95); }
+
+        .donate-btn.special {
+            background: linear-gradient(135deg, rgba(233,68,96,0.3), rgba(240,192,64,0.2));
+            border-color: rgba(240,192,64,0.4);
+            grid-column: span 2;
+        }
+
+        .custom-donate {
+            display: flex; gap: 8px; margin-top: 4px;
+        }
+
+        .custom-donate input {
+            flex: 1;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 0;
+        }
+
+        .custom-donate input:focus { border-color: var(--accent); }
+
+        .custom-donate button {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .custom-donate button:hover {
+            background: #ff5a7a;
+            box-shadow: 0 4px 16px rgba(233,68,96,0.4);
+        }
+
+        /* === DONOR LOG === */
+        .donor-log {
+            margin-top: 24px;
+            text-align: left;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .donor-log h3 {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .donor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            animation: slideIn 0.4s ease-out;
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .donor-name { color: #ddd; }
+        .donor-amount { color: var(--gold); font-weight: 700; margin-left: auto; }
+        .donor-msg { color: var(--muted); font-size: 11px; font-style: italic; }
+
+        /* === QR CODE SECTION === */
+        .qr-section { display: none; }
+        .qr-section.active { display: block; }
+
+        .qr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .qr-card {
+            background: rgba(255,255,255,0.03);
+            border: 2px dashed rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .qr-card:hover {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .qr-card.has-qr {
+            border-style: solid;
+            border-color: rgba(76,255,143,0.3);
+            cursor: default;
+        }
+
+        .qr-card img {
+            max-width: 100%;
+            max-height: 220px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .qr-card .qr-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .qr-card .qr-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .qr-card.has-qr .qr-icon { display: none; }
+        .qr-card.has-qr .qr-placeholder-text { display: none; }
+
+        .qr-placeholder-text {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .qr-card .qr-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(233,68,96,0.8);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 2;
+        }
+
+        .qr-card.has-qr .qr-delete { display: flex; }
+        .qr-card .qr-delete:hover { background: #e94560; transform: scale(1.1); }
+
+        .qr-card .qr-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+            border-radius: 16px;
+            pointer-events: none;
+        }
+
+        .qr-card.has-qr:hover .qr-overlay {
+            background: rgba(0,0,0,0.6);
+        }
+
+        .qr-card .qr-zoom-text {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .qr-card.has-qr:hover .qr-zoom-text { opacity: 1; }
+
+        .qr-hint {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .qr-hint em { color: var(--gold); font-style: normal; }
+
+        /* === QR LIGHTBOX === */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 20px;
+        }
+
+        .lightbox.show { display: flex; }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            transition: all 0.2s;
+            z-index: 1001;
+        }
+
+        .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* === TOAST === */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: linear-gradient(135deg, #2d2d4e, #3d2d4e);
+            border: 1px solid rgba(240,192,64,0.4);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 500;
+            transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* === CONFETTI === */
+        .confetti-piece {
+            position: fixed;
+            pointer-events: none;
+            z-index: 200;
+            animation: confettiFall linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0%   { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* === RESET === */
+        .reset-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 16px;
+            font-family: inherit;
+            transition: color 0.2s;
+        }
+        .reset-btn:hover { color: #fff; }
+
+        /* === SCROLLBAR === */
+        .donor-log::-webkit-scrollbar { width: 4px; }
+        .donor-log::-webkit-scrollbar-track { background: transparent; }
+        .donor-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        /* === PANEL (Simulated/QR) === */
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 500px) {
+            .card { padding: 24px 16px; border-radius: 20px; }
+            .beggar { font-size: 60px; }
+            .donate-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .progress-header .raised { font-size: 24px; }
+            .qr-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .qr-card { min-height: 160px; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 模式切换 -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="mock">🎮 模拟乞讨</button>
+            <button class="mode-tab" data-mode="qr">📱 扫码打赏</button>
+        </div>
+
+        <div class="card">
+            <!-- 乞讨者 -->
+            <div class="beggar" id="beggar" title="点我！">🥺</div>
+            <div class="beggar-speech" id="speech">行行好，给点钱吧...</div>
+
+            <!-- 进度条 (两种模式共用) -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="raised" id="raised">¥0.00</span>
+                    <span class="goal">目标 ¥100.00</span>
+                </div>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="progressBar" style="width: 0%;"></div>
+                </div>
+                <div class="progress-percent" id="percentText">还差 ¥100.00，路漫漫其修远兮...</div>
+            </div>
+
+            <!-- ============ 模拟乞讨面板 ============ -->
+            <div class="panel active" id="mockPanel">
+                <div class="donate-grid">
+                    <button class="donate-btn" data-amount="0.01">¥0.01<br><small>意思意思</small></button>
+                    <button class="donate-btn" data-amount="0.5">¥0.50<br><small>买个馒头</small></button>
+                    <button class="donate-btn" data-amount="1">¥1.00<br><small>一瓶水</small></button>
+                    <button class="donate-btn" data-amount="5">¥5.00<br><small>一顿饭</small></button>
+                    <button class="donate-btn special" data-amount="10">💎 ¥10.00 &nbsp;大善人</button>
+                    <button class="donate-btn special" data-amount="50">💰 ¥50.00 &nbsp;活菩萨</button>
+                </div>
+
+                <div class="custom-donate">
+                    <input type="number" id="customAmount" placeholder="自定义金额..." min="0.01" max="100" step="0.01">
+                    <button id="customDonateBtn">施舍</button>
+                </div>
+            </div>
+
+            <!-- ============ 扫码打赏面板 ============ -->
+            <div class="panel" id="qrPanel">
+                <div class="qr-grid">
+                    <!-- 微信收款码 -->
+                    <div class="qr-card" id="wechatQrCard" title="点击上传微信收款码">
+                        <span class="qr-icon">💚</span>
+                        <span class="qr-label">微信收款码</span>
+                        <span class="qr-placeholder-text">点击上传</span>
+                        <img id="wechatQrImg" src="" alt="微信收款码" style="display:none;">
+                        <button class="qr-delete" id="wechatQrDelete" title="删除">×</button>
+                        <div class="qr-overlay"><span class="qr-zoom-text">🔍 点击放大</span></div>
+                    </div>
+
+                    <!-- 支付宝收款码 -->
+                    <div class="qr-card" id="alipayQrCard" title="点击上传支付宝收款码">
+                        <span class="qr-icon">💙</span>
+                        <span class="qr-label">支付宝收款码</span>
+                        <span class="qr-placeholder-text">点击上传</span>
+                        <img id="alipayQrImg" src="" alt="支付宝收款码" style="display:none;">
+                        <button class="qr-delete" id="alipayQrDelete" title="删除">×</button>
+                        <div class="qr-overlay"><span class="qr-zoom-text">🔍 点击放大</span></div>
+                    </div>
+                </div>
+                <p class="qr-hint">📸 点击上传 <em>微信</em> 或 <em>支付宝</em> 收款码截图<br>图片仅保存在你的浏览器本地，不会上传到任何服务器</p>
+                <p class="qr-hint" style="margin-top: 4px; font-size: 11px;">收到钱后记得手动更新上面的进度条哦 👆</p>
+
+                <!-- 手动加钱 -->
+                <div class="custom-donate" style="margin-top: 12px;">
+                    <input type="number" id="qrAddAmount" placeholder="收到多少钱？手动加一下..." min="0.01" max="100" step="0.01">
+                    <button id="qrAddBtn">💰 记一笔</button>
+                </div>
+            </div>
+
+            <!-- 施主榜 -->
+            <div class="donor-log" id="donorLog">
+                <h3>🧾 施主榜</h3>
+                <div id="donorList">
+                    <div style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">
+                        还没有人施舍... 😢
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="reset-btn" id="resetBtn">🔄 重新讨饭</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 二维码灯箱 -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose">✕</button>
+        <img id="lightboxImg" src="" alt="收款码">
+    </div>
+
+    <!-- 隐藏的文件上传input -->
+    <input type="file" id="fileInput" accept="image/*" style="display:none;">
+
+    <script src="qr-init.js"></script>
+    <script>
+        (function() {
+            // === STATE ===
+            const GOAL = 100;
+            let totalRaised = parseFloat(localStorage.getItem('begging_total') || '0');
+            let donors = JSON.parse(localStorage.getItem('begging_donors') || '[]');
+            let hasReachedGoal = localStorage.getItem('begging_reached') === 'true';
+            // 二维码 base64 数据
+            let qrCodes = JSON.parse(localStorage.getItem('begging_qrcodes') || '{"wechat":"","alipay":""}');
+            const hasQrCodes = !!(qrCodes.wechat || qrCodes.alipay);
+            let currentMode = localStorage.getItem('begging_mode') || (hasQrCodes ? 'qr' : 'mock');
+
+            // === DOM REFS ===
+            const $beggar = document.getElementById('beggar');
+            const $speech = document.getElementById('speech');
+            const $raised = document.getElementById('raised');
+            const $progressBar = document.getElementById('progressBar');
+            const $percentText = document.getElementById('percentText');
+            const $donorList = document.getElementById('donorList');
+            const $toast = document.getElementById('toast');
+            const $customAmount = document.getElementById('customAmount');
+            const $customDonateBtn = document.getElementById('customDonateBtn');
+            const $resetBtn = document.getElementById('resetBtn');
+            const $mockPanel = document.getElementById('mockPanel');
+            const $qrPanel = document.getElementById('qrPanel');
+            const $lightbox = document.getElementById('lightbox');
+            const $lightboxImg = document.getElementById('lightboxImg');
+            const $lightboxClose = document.getElementById('lightboxClose');
+            const $fileInput = document.getElementById('fileInput');
+            const $qrAddAmount = document.getElementById('qrAddAmount');
+            const $qrAddBtn = document.getElementById('qrAddBtn');
+
+            // QR card refs
+            const $wechatCard = document.getElementById('wechatQrCard');
+            const $wechatImg = document.getElementById('wechatQrImg');
+            const $wechatDelete = document.getElementById('wechatQrDelete');
+            const $alipayCard = document.getElementById('alipayQrCard');
+            const $alipayImg = document.getElementById('alipayQrImg');
+            const $alipayDelete = document.getElementById('alipayQrDelete');
+
+            let uploadTarget = null; // 'wechat' or 'alipay'
+
+            // === BEGGAR DATA ===
+            const beggarFaces = ['🥺','😭','🥹','😢','🫣','😩','🧎','🙏','😿','💔'];
+            const sadPhrases = [
+                '行行好，给点钱吧...','三天没吃饭了...','家里还有80岁老母亲...',
+                '孩子等着交学费呢...','求求你了，好心人...','下个月一定还！',
+                '就当积德行善了...','好人一生平安！','施舍一点吧，老板...',
+                '给个馒头钱就行...','今天还没开张呢...','扫码也行啊老板！',
+            ];
+            const happyPhrases = [
+                '好人一生平安！！！','老板大气！','祝您发大财！',
+                '您就是我的再生父母！','来世做牛做马报答您！','您一定会中彩票的！',
+                '财神爷保佑您！','感恩的心，感谢有你！','扫码的老板最好看！',
+            ];
+            const richNames = [
+                '匿名好心人','路过的老板','财神爷','散财童子',
+                '王老板','李善人','张土豪','赵公子',
+                '奶茶不用找了','今天的功德','一位不愿透露姓名的富豪',
+                '活雷锋','马先生','小马哥','隔壁老王',
+                '扫地僧','江湖救急','人间自有真情在',
+            ];
+            const donorMessages = [
+                '拿去买馒头！','别饿着了','加油！','都不容易',
+                '收下吧','略尽绵力','积少成多','笑纳',
+                '不用还了','好好生活','明天会更好','🙏',
+                '江湖救急','同是天涯沦落人','冲冲冲！',
+            ];
+
+            function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+            function randFloat(min, max) { return Math.random() * (max - min) + min; }
+
+            // === PERSISTENCE ===
+            function save() {
+                localStorage.setItem('begging_total', totalRaised.toFixed(2));
+                localStorage.setItem('begging_donors', JSON.stringify(donors));
+                localStorage.setItem('begging_reached', (totalRaised >= GOAL).toString());
+                localStorage.setItem('begging_qrcodes', JSON.stringify(qrCodes));
+                localStorage.setItem('begging_mode', currentMode);
+            }
+
+            // === UI ===
+            function updateUI() {
+                const pct = Math.min((totalRaised / GOAL) * 100, 100);
+                $raised.textContent = '¥' + totalRaised.toFixed(2);
+                $progressBar.style.width = pct.toFixed(1) + '%';
+                $raised.style.color = pct >= 50 ? 'var(--green)' : 'var(--gold)';
+
+                const remaining = Math.max(GOAL - totalRaised, 0);
+                if (totalRaised >= GOAL) {
+                    $percentText.textContent = '🎉 目标达成！感谢所有好心人！';
+                    $speech.textContent = '我发财了！！！感谢大家！！！';
+                    $beggar.textContent = '🥳';
+                } else if (pct >= 80) {
+                    $percentText.textContent = `就差 ¥${remaining.toFixed(2)} 了！胜利在望！`;
+                } else if (pct >= 50) {
+                    $percentText.textContent = `还差 ¥${remaining.toFixed(2)}，过半了！加油！`;
+                } else if (pct >= 10) {
+                    $percentText.textContent = `还差 ¥${remaining.toFixed(2)}，积少成多...`;
+                } else {
+                    $percentText.textContent = `还差 ¥${remaining.toFixed(2)}，路漫漫其修远兮...`;
+                }
+
+                // 施主榜
+                if (donors.length === 0) {
+                    $donorList.innerHTML = '<div style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">还没有人施舍... 😢</div>';
+                } else {
+                    $donorList.innerHTML = donors.slice().reverse().map(d => `
+                        <div class="donor-item">
+                          <span class="donor-name">${d.name}</span>
+                          ${d.msg ? `<span class="donor-msg">"${d.msg}"</span>` : ''}
+                          <span class="donor-amount">+¥${d.amount.toFixed(2)}</span>
+                        </div>
+                      `).join('');
+                }
+            }
+
+            function updateQrUI() {
+                ['wechat','alipay'].forEach(type => {
+                    const card = type === 'wechat' ? $wechatCard : $alipayCard;
+                    const img = type === 'wechat' ? $wechatImg : $alipayImg;
+                    if (qrCodes[type]) {
+                        img.src = qrCodes[type];
+                        img.style.display = 'block';
+                        card.classList.add('has-qr');
+                    } else {
+                        img.src = '';
+                        img.style.display = 'none';
+                        card.classList.remove('has-qr');
+                    }
+                });
+            }
+
+            function showToast(msg) {
+                $toast.textContent = msg;
+                $toast.classList.add('show');
+                clearTimeout($toast._timeout);
+                $toast._timeout = setTimeout(() => $toast.classList.remove('show'), 2500);
+            }
+
+            function spawnConfetti(count = 60) {
+                const colors = ['#e94560','#f0c040','#4cff8f','#ff6b9d','#ffd93d',
+                    '#6bcb77','#4d96ff','#ff922b','#ff6b6b','#a29bfe'];
+                for (let i = 0; i < count; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'confetti-piece';
+                    piece.style.left = Math.random() * 100 + '%';
+                    piece.style.top = -(Math.random() * 40 + 10) + 'px';
+                    piece.style.width = (Math.random() * 10 + 6) + 'px';
+                    piece.style.height = (Math.random() * 10 + 6) + 'px';
+                    piece.style.background = rand(colors);
+                    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    piece.style.animationDelay = Math.random() * 1.5 + 's';
+                    document.body.appendChild(piece);
+                    setTimeout(() => piece.remove(), 4000);
+                }
+            }
+
+            // === DONATE LOGIC ===
+            function donate(amount, name, msg) {
+                if (totalRaised >= GOAL) {
+                    showToast('🎉 已经讨够100元了！不用再给了！');
+                    return;
+                }
+
+                const actualAmount = Math.min(amount, GOAL - totalRaised);
+                totalRaised += actualAmount;
+                totalRaised = Math.round(totalRaised * 100) / 100;
+
+                donors.push({
+                    name: name || rand(richNames),
+                    amount: actualAmount,
+                    msg: msg || (Math.random() > 0.4 ? rand(donorMessages) : ''),
+                    time: Date.now(),
+                });
+
+                save();
+                updateUI();
+
+                // 反应
+                if (actualAmount >= 50) {
+                    showToast(`🤯 ${name || '大善人'} 施舍了 ¥${actualAmount.toFixed(2)}！活菩萨降临！`);
+                    $beggar.textContent = '🤩';
+                    spawnConfetti(120);
+                    setTimeout(() => { if (totalRaised < GOAL) $beggar.textContent = rand(beggarFaces); }, 2500);
+                } else if (actualAmount >= 10) {
+                    showToast(`✨ 收到 ¥${actualAmount.toFixed(2)}！老板大气！`);
+                    $beggar.textContent = '🥹';
+                    spawnConfetti(40);
+                    setTimeout(() => { if (totalRaised < GOAL) $beggar.textContent = rand(beggarFaces); }, 2000);
+                } else if (actualAmount >= 1) {
+                    showToast(`🙏 收到 ¥${actualAmount.toFixed(2)}！好人一生平安！`);
+                    $beggar.textContent = '🙏';
+                    setTimeout(() => { if (totalRaised < GOAL) $beggar.textContent = rand(beggarFaces); }, 1500);
+                } else {
+                    showToast(`💛 收到 ¥${actualAmount.toFixed(2)}！积少成多！`);
+                }
+
+                $speech.textContent = rand(happyPhrases);
+                setTimeout(() => {
+                    if (totalRaised < GOAL) $speech.textContent = rand(sadPhrases);
+                }, 2500);
+
+                if (totalRaised >= GOAL && !hasReachedGoal) {
+                    hasReachedGoal = true;
+                    save();
+                    setTimeout(() => {
+                        showToast('🎉🎉🎉 恭喜！成功讨到100元！！！ 🎉🎉🎉');
+                        $beggar.textContent = '🥳';
+                        $speech.textContent = '我发财了！！！感谢大家！！！';
+                        spawnConfetti(200);
+                    }, 600);
+                }
+            }
+
+            // === MODE SWITCHING ===
+            function switchMode(mode) {
+                currentMode = mode;
+                save();
+
+                document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+
+                $mockPanel.classList.toggle('active', mode === 'mock');
+                $qrPanel.classList.toggle('active', mode === 'qr');
+
+                if (mode === 'qr') {
+                    $speech.textContent = '扫一扫，给点钱吧老板...';
+                    $beggar.textContent = '🧎';
+                } else {
+                    $speech.textContent = '行行好，给点钱吧...';
+                    $beggar.textContent = '🥺';
+                }
+            }
+
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+            });
+
+            // === QR CODE UPLOAD ===
+            function handleQrCardClick(type) {
+                if (qrCodes[type]) {
+                    // 已有二维码 -> 放大查看
+                    $lightboxImg.src = qrCodes[type];
+                    $lightbox.classList.add('show');
+                } else {
+                    // 没有 -> 触发上传
+                    uploadTarget = type;
+                    $fileInput.click();
+                }
+            }
+
+            $wechatCard.addEventListener('click', (e) => {
+                if (e.target === $wechatDelete) return;
+                handleQrCardClick('wechat');
+            });
+
+            $alipayCard.addEventListener('click', (e) => {
+                if (e.target === $alipayDelete) return;
+                handleQrCardClick('alipay');
+            });
+
+            $wechatDelete.addEventListener('click', (e) => {
+                e.stopPropagation();
+                qrCodes.wechat = '';
+                save();
+                updateQrUI();
+                showToast('🗑️ 微信收款码已删除');
+            });
+
+            $alipayDelete.addEventListener('click', (e) => {
+                e.stopPropagation();
+                qrCodes.alipay = '';
+                save();
+                updateQrUI();
+                showToast('🗑️ 支付宝收款码已删除');
+            });
+
+            $fileInput.addEventListener('change', () => {
+                const file = $fileInput.files[0];
+                if (!file || !uploadTarget) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // 用 canvas 压缩图片，避免 localStorage 溢出
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const maxW = 400, maxH = 500;
+                        let w = img.width, h = img.height;
+                        if (w > maxW || h > maxH) {
+                            const ratio = Math.min(maxW / w, maxH / h);
+                            w = Math.round(w * ratio);
+                            h = Math.round(h * ratio);
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+
+                        qrCodes[uploadTarget] = compressed;
+                        save();
+                        updateQrUI();
+                        const label = uploadTarget === 'wechat' ? '微信' : '支付宝';
+                        showToast(`✅ ${label}收款码已上传！`);
+                        uploadTarget = null;
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                $fileInput.value = '';
+            });
+
+            // Lightbox
+            $lightbox.addEventListener('click', () => $lightbox.classList.remove('show'));
+            $lightboxClose.addEventListener('click', () => $lightbox.classList.remove('show'));
+
+            // 手动加钱（扫码模式）
+            $qrAddBtn.addEventListener('click', () => {
+                const amount = parseFloat($qrAddAmount.value);
+                if (isNaN(amount) || amount <= 0) {
+                    showToast('😅 请输入有效金额...');
+                    return;
+                }
+                if (amount > 100) {
+                    showToast('😅 单笔最多100！');
+                    return;
+                }
+                $qrAddAmount.value = '';
+                donate(amount, '扫码的好心人', '扫码打赏');
+            });
+
+            $qrAddAmount.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') $qrAddBtn.click();
+            });
+
+            // === EVENT LISTENERS (模拟模式) ===
+            document.querySelectorAll('.donate-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const amount = parseFloat(btn.dataset.amount);
+                    donate(amount);
+                });
+            });
+
+            $customDonateBtn.addEventListener('click', () => {
+                const amount = parseFloat($customAmount.value);
+                if (isNaN(amount) || amount <= 0) {
+                    showToast('😅 请输入一个有效的金额...');
+                    return;
+                }
+                if (amount > 100) {
+                    showToast('😅 太多了太多了，最多100！');
+                    return;
+                }
+                $customAmount.value = '';
+                donate(amount, '匿名好心人');
+            });
+
+            $customAmount.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') $customDonateBtn.click();
+            });
+
+            // 点击乞讨者
+            let clickCount = 0;
+            $beggar.addEventListener('click', () => {
+                clickCount++;
+                $beggar.textContent = rand(beggarFaces);
+                $speech.textContent = rand(sadPhrases);
+
+                if (clickCount % 5 === 0) {
+                    const pityAmount = Math.round(randFloat(0.01, 0.5) * 100) / 100;
+                    donate(pityAmount, '路过的可怜人', '看得我心疼...');
+                }
+            });
+
+            // 重置
+            $resetBtn.addEventListener('click', () => {
+                if (confirm('确定要重新开始讨饭吗？\n\n模拟施舍记录会清空，但收款码会保留。')) {
+                    totalRaised = 0;
+                    donors = [];
+                    hasReachedGoal = false;
+                    localStorage.removeItem('begging_total');
+                    localStorage.removeItem('begging_donors');
+                    localStorage.removeItem('begging_reached');
+                    $beggar.textContent = '🥺';
+                    $speech.textContent = '行行好，给点钱吧...';
+                    updateUI();
+                    showToast('🔄 重新开始讨饭...');
+                }
+            });
+
+            // === SIMULATED DONATIONS ===
+            function maybeSimulatedDonation() {
+                if (totalRaised >= GOAL) return;
+                const chance = totalRaised < 30 ? 0.25 : totalRaised < 70 ? 0.18 : totalRaised < 95 ? 0.10 : 0.04;
+                if (Math.random() < chance) {
+                    const maxAmount = Math.min(3, GOAL - totalRaised);
+                    const amount = Math.round(randFloat(0.01, maxAmount) * 100) / 100;
+                    donate(amount);
+                }
+            }
+
+            function scheduleSimulation() {
+                const delay = randFloat(8000, 20000);
+                setTimeout(() => {
+                    maybeSimulatedDonation();
+                    scheduleSimulation();
+                }, delay);
+            }
+
+            // === INIT ===
+            updateUI();
+            updateQrUI();
+            switchMode(currentMode);
+            if (totalRaised >= GOAL) {
+                $beggar.textContent = '🥳';
+                $speech.textContent = '我发财了！！！感谢大家！！！';
+            }
+            scheduleSimulation();
+
+            console.log('🍚 在线乞讨系统已就绪');
+            console.log(`   当前已讨到: ¥${totalRaised.toFixed(2)} / ¥${GOAL}.00`);
+            console.log('   📱 切换到"扫码打赏"模式上传收款码');
+            console.log('   点击小表情可以博取同情，每点5次路人会施舍一次！');
+        })();
+    </script>
+</body>
+</html>

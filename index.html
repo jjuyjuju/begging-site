@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🍚 在线乞讨 - 讨到100元就收手！</title>
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🍚 在线乞讨 - 讨到100元就收手！">
+    <meta property="og:description" content="一个卑微的在线乞丐，目标100元。求各位老板施舍，好人一生平安！支持微信/支付宝扫码打赏。">
+    <meta property="og:url" content="https://jjuyjuju.github.io/begging-site/">
+    <meta property="og:image" content="https://em-content.zobj.net/thumbs/240/apple/354/face-with-pleading-eyes_1f97a.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="🍚 在线乞讨 - 讨到100元就收手！">
+    <meta name="twitter:description" content="一个卑微的在线乞丐，目标100元。求各位老板施舍，好人一生平安！">
+    <meta name="description" content="一个卑微的在线乞丐，目标100元。求各位老板施舍，好人一生平安！支持微信/支付宝扫码打赏。">
     <style>
         :root {
             --bg: #1a1a2e;
@@ -497,6 +508,30 @@
             100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
         }
 
+        /* === SHARE BUTTONS === */
+        .share-btn {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            color: #fff;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .share-btn:hover { transform: translateY(-2px); }
+        .share-btn:active { transform: scale(0.95); }
+        .share-btn.wechat { background: #07c160; }
+        .share-btn.wechat:hover { box-shadow: 0 4px 15px rgba(7,193,96,0.4); }
+        .share-btn.weibo { background: #e6162d; }
+        .share-btn.weibo:hover { box-shadow: 0 4px 15px rgba(230,22,45,0.4); }
+        .share-btn.qq { background: #12b7f5; }
+        .share-btn.qq:hover { box-shadow: 0 4px 15px rgba(18,183,245,0.4); }
+        .share-btn.copy { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+        .share-btn.copy:hover { background: rgba(255,255,255,0.2); }
+
         /* === RESET === */
         .reset-btn {
             background: none;
@@ -614,6 +649,20 @@
                         还没有人施舍... 😢
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 分享区域 -->
+        <div class="share-section" style="margin-top: 20px; text-align: center;">
+            <div style="font-size: 13px; color: var(--muted); margin-bottom: 10px;">📢 帮扩散，让更多好心人看到</div>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="share-btn wechat" id="shareWechat" title="分享到微信">💬 微信</button>
+                <button class="share-btn weibo" id="shareWeibo" title="分享到微博">📢 微博</button>
+                <button class="share-btn qq" id="shareQQ" title="分享到QQ">🐧 QQ</button>
+                <button class="share-btn copy" id="shareCopy" title="复制链接">🔗 复制链接</button>
+            </div>
+            <div id="shareCount" style="font-size: 12px; color: var(--muted); margin-top: 8px;">
+                已分享 <strong style="color: var(--gold);" id="shareNum">0</strong> 次
             </div>
         </div>
 
@@ -1012,8 +1061,61 @@
                 }
             });
 
+            // === SHARING ===
+            const SITE_URL = 'https://jjuyjuju.github.io/begging-site/';
+            const SITE_TITLE = '🍚 在线乞讨 - 讨到100元就收手！';
+            const SITE_DESC = '一个卑微的在线乞丐，目标100元。求各位老板施舍，好人一生平安！';
+
+            let shareCount = parseInt(localStorage.getItem('begging_shares') || '0');
+            document.getElementById('shareNum').textContent = shareCount;
+
+            function trackShare(platform) {
+                shareCount++;
+                localStorage.setItem('begging_shares', shareCount.toString());
+                document.getElementById('shareNum').textContent = shareCount;
+                // 分享一次等于拉来一个潜在施主，给点奖励进度
+                if (totalRaised < GOAL && shareCount % 3 === 0) {
+                    donate(Math.round(randFloat(0.1, 1) * 100) / 100, '分享引流来的路人', '看到分享来的');
+                }
+            }
+
+            document.getElementById('shareWechat').addEventListener('click', () => {
+                // 生成微信分享引导
+                navigator.clipboard.writeText(SITE_URL).then(() => {
+                    showToast('✅ 链接已复制！打开微信 → 朋友圈 → 粘贴链接和文案');
+                    trackShare('wechat');
+                }).catch(() => {
+                    showToast('📋 请手动复制链接分享到微信：' + SITE_URL);
+                });
+            });
+
+            document.getElementById('shareWeibo').addEventListener('click', () => {
+                const url = 'https://service.weibo.com/share/share.php?title=' +
+                    encodeURIComponent(SITE_TITLE + ' ' + SITE_DESC + ' ' + SITE_URL) +
+                    '&url=' + encodeURIComponent(SITE_URL);
+                window.open(url, '_blank');
+                trackShare('weibo');
+            });
+
+            document.getElementById('shareQQ').addEventListener('click', () => {
+                const url = 'https://connect.qq.com/widget/shareqq/index.html?title=' +
+                    encodeURIComponent(SITE_TITLE) + '&desc=' + encodeURIComponent(SITE_DESC) +
+                    '&url=' + encodeURIComponent(SITE_URL);
+                window.open(url, '_blank');
+                trackShare('qq');
+            });
+
+            document.getElementById('shareCopy').addEventListener('click', () => {
+                const copyText = SITE_TITLE + '\n' + SITE_DESC + '\n' + SITE_URL;
+                navigator.clipboard.writeText(copyText).then(() => {
+                    showToast('📋 链接+文案已复制！去任意平台粘贴即可');
+                    trackShare('copy');
+                }).catch(() => {
+                    prompt('手动复制以下内容：', copyText);
+                });
+            });
+
             // 重置
-            $resetBtn.addEventListener('click', () => {
                 if (confirm('确定要重新开始讨饭吗？\n\n模拟施舍记录会清空，但收款码会保留。')) {
                     totalRaised = 0;
                     donors = [];
@@ -1031,16 +1133,25 @@
             // === SIMULATED DONATIONS ===
             function maybeSimulatedDonation() {
                 if (totalRaised >= GOAL) return;
-                const chance = totalRaised < 30 ? 0.25 : totalRaised < 70 ? 0.18 : totalRaised < 95 ? 0.10 : 0.04;
+                // 激进的模拟策略 — 确保能讨到100元
+                const remaining = GOAL - totalRaised;
+                const pct = (totalRaised / GOAL) * 100;
+                // 更高的触发概率和更大的金额
+                const chance = pct < 30 ? 0.45 : pct < 60 ? 0.35 : pct < 85 ? 0.25 : pct < 98 ? 0.18 : 0.10;
                 if (Math.random() < chance) {
-                    const maxAmount = Math.min(3, GOAL - totalRaised);
-                    const amount = Math.round(randFloat(0.01, maxAmount) * 100) / 100;
+                    // 金额随进度增大
+                    const maxAmount = Math.min(
+                        pct < 50 ? 5 : pct < 80 ? 8 : 15,
+                        remaining
+                    );
+                    const amount = Math.round(randFloat(0.05, Math.max(maxAmount, 0.1)) * 100) / 100;
                     donate(amount);
                 }
             }
 
             function scheduleSimulation() {
-                const delay = randFloat(8000, 20000);
+                // 更短的间隔，更快到100
+                const delay = randFloat(3000, 10000);
                 setTimeout(() => {
                     maybeSimulatedDonation();
                     scheduleSimulation();
